@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/llContent"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    android:layout_marginStart="1dp"
+    android:layout_marginEnd="1dp"
+    android:layout_marginBottom="1dp"
+    android:background="?attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:weightSum="6">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="16dp"
+        android:layout_weight="0.1"
+         app:cardCornerRadius="6dp"
+         app:cardElevation="0dp"
+    android:backgroundTint="@android:color/transparent">
+
+    <ImageView
+        android:id="@+id/imgThumbnail"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/home"
+    tools:ignore="ContentDescription" />
+</androidx.cardview.widget.CardView>
+
+<LinearLayout
+android:layout_width="0dp"
+android:layout_height="match_parent"
+android:layout_weight="5.9"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp">
+
+    <!-- Song name text -->
+    <TextView
+        android:id="@+id/txtSongName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="Song Name"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+
+    <!-- Artist name text -->
+<TextView
+android:id="@+id/txtArtistName"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:ellipsize="end"
+android:maxLines="1"
+    android:text="Artist name"
+    android:textColor="@color/grey"
+    android:textSize="14sp"
+    tools:ignore="HardcodedText" />
+    </LinearLayout>
+
+    </LinearLayout>
