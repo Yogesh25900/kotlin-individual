@@ -10,7 +10,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-class MusicPlayerViewModel private constructor(private val musicPlayerRepository: MusicPlayerRepositoryImp) : ViewModel() {
+class MusicPlayerViewModel(private val musicPlayerRepository: MusicPlayerRepositoryImp) : ViewModel() {
 
     // LiveData to observe songs
     private val _songs = MutableLiveData<List<Song>>()
@@ -33,11 +33,14 @@ class MusicPlayerViewModel private constructor(private val musicPlayerRepository
 
     private var progressUpdaterJob: Job? = null
 
+    private val _selectedSongs = MutableLiveData<List<Song>>(emptyList()) // LiveData for selected songs
+    val selectedSongs: LiveData<List<Song>> get() = _selectedSongs
+
     init {
         fetchSongs()
     }
 
-    private fun fetchSongs() {
+    fun fetchSongs() {
         val fetchedSongs = musicPlayerRepository.fetchSongs()
         Log.d("MusicPlayerViewModel", "Fetched songs: $fetchedSongs")
         _songs.postValue(fetchedSongs)
@@ -116,6 +119,22 @@ class MusicPlayerViewModel private constructor(private val musicPlayerRepository
         super.onCleared()
         musicPlayerRepository.releasePlayer()
         stopProgressUpdater()
+    }
+
+    // Update selected songs
+    fun updateSelectedSongs(newSelectedSongs: List<Song>) {
+        _selectedSongs.value = newSelectedSongs
+    }
+
+    // Toggle song selection
+    fun toggleSongSelection(song: Song) {
+        val currentList = _selectedSongs.value?.toMutableList() ?: mutableListOf()
+        if (currentList.contains(song)) {
+            currentList.remove(song)
+        } else {
+            currentList.add(song)
+        }
+        updateSelectedSongs(currentList)
     }
 
     // Singleton Pattern Implementation
