@@ -7,20 +7,27 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.music_player.R
 import com.example.music_player.model.Song
-import com.bumptech.glide.Glide
-import com.example.music_player.viewModel.MusicPlayerViewModel
+import com.example.music_player.viewModel.OnlineSongViewModel
 
-class SongAdapter(
-    var songs: List<Song>,
+class OnlineSongAdapter(
     private val onClick: (Song) -> Unit,
     private val onCloseSelection: () -> Unit,
-    private val songViewModel: MusicPlayerViewModel // Inject ViewModel
-) : RecyclerView.Adapter<SongAdapter.SongViewHolder>() {
+    private val songViewModel: OnlineSongViewModel
+) : RecyclerView.Adapter<OnlineSongAdapter.SongViewHolder>() {
 
-    var selectionMode = false // Tracks selection mode
-    private val selectedSongsIds = mutableListOf<String>() // List to track selected song IDs
+    var selectionMode = false
+    private val selectedSongsIds = mutableListOf<String>()
+    private var songs: List<Song> = emptyList()
+
+    init {
+        songViewModel.songList.observeForever { updatedSongs ->
+            songs = updatedSongs
+            notifyDataSetChanged()
+        }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_song, parent, false)
@@ -34,13 +41,12 @@ class SongAdapter(
         holder.itemView.setOnClickListener {
             if (selectionMode) {
                 song.selected = !song.selected
-                holder.updateSelectionUI(song)  // Update the selection UI
+                holder.updateSelectionUI(song)
                 if (song.selected) {
-                    selectedSongsIds.add(song.id) // Add song to selected list
+                    selectedSongsIds.add(song.id)
                 } else {
-                    selectedSongsIds.remove(song.id) // Remove song from selected list
+                    selectedSongsIds.remove(song.id)
                 }
-                updateSelectedSongs() // Update ViewModel with selected songs
                 notifyItemChanged(position)
 
                 // Exit selection mode if no songs are selected
@@ -48,18 +54,17 @@ class SongAdapter(
                     closeSelectionMode()
                 }
             } else {
-                onSongClick(song)  // Regular click behavior (e.g., play song)
+                onSongClick(song)
             }
         }
 
         // Long press logic for toggling selection mode
         holder.itemView.setOnLongClickListener {
             Log.d("MusicPlayer", "Long press detected for song: ${song.name}")
-            toggleSelectionMode(song)  // Toggle selection mode on long press
-            true // Indicating the long click was handled
+            toggleSelectionMode(song)
+            true
         }
 
-        // Bind song data
         holder.bind(song)
     }
 
@@ -76,16 +81,14 @@ class SongAdapter(
             artistTextView.text = song.artistName
 
             Glide.with(itemView.context)
-                .load(song.albumArt ?: R.drawable.music) // Default image if null
+                .load(song.albumArt ?: R.drawable.music)
                 .placeholder(R.drawable.home)
                 .into(albumArtImageView)
 
-            // Show or hide the selection checkbox based on the selection mode
             selectCheckBox.visibility = if (selectionMode) View.VISIBLE else View.GONE
-            updateSelectionUI(song) // Update the selection UI based on the song's state
+            updateSelectionUI(song)
         }
 
-        // Updates the checkbox UI to show whether the song is selected or not
         fun updateSelectionUI(song: Song) {
             selectCheckBox.setImageResource(
                 if (song.selected) R.drawable.uncheck else R.drawable.checkbox
@@ -93,59 +96,27 @@ class SongAdapter(
         }
     }
 
-    // Toggle selection mode on long press
     private fun toggleSelectionMode(song: Song) {
         if (!selectionMode) {
-            // Enter selection mode and mark the song as selected
             selectionMode = true
             song.selected = true
-            selectedSongsIds.add(song.id) // Add to selected list
-            Log.d("MusicPlayer", "Entering selection mode: ${song.name}")
-            updateSelectedSongs() // Update ViewModel with selected songs
+            selectedSongsIds.add(song.id)
             notifyDataSetChanged()
         }
     }
 
-    // Close selection mode and reset selection states
     fun closeSelectionMode() {
         selectionMode = false
-        songs.forEach { it.selected = false }  // Reset selection state
-        selectedSongsIds.clear() // Clear the selected songs list
+        songs.forEach { it.selected = false }
+        selectedSongsIds.clear()
         notifyDataSetChanged()
-        onCloseSelection() // Trigger the callback to close selection
+        onCloseSelection()
     }
 
-    // Update selected songs in ViewModel
-    private fun updateSelectedSongs() {
-        val selectedSongIds = songs.filter { it.selected }.map { it.id }  // Extract IDs of selected songs
-        songViewModel.updateSelectedSongs(selectedSongIds)  // Pass the IDs to ViewModel
-    }
-
-
-    // Update songs list and refresh the adapter
-    fun updateSongs(newSongs: List<Song>) {
-        songs = newSongs
-        notifyDataSetChanged()
-    }
-
-    // Get selected songs IDs
     fun getSelectedSongs(): MutableList<String> = selectedSongsIds
 
-    // Handle song click (play song)
     private fun onSongClick(song: Song) {
         Log.d("MusicPlayer", "Playing song: ${song.name}")
-        onClick(song) // Invoke the onClick callback passed into the adapter
+        onClick(song)
     }
-
-    // Function to delete a song
-// Function to delete a song
-    fun deleteSong(position: Int) {
-        val songToDelete = songs[position]
-        // Call ViewModel's deleteSong method with the song path
-        songViewModel.deleteSong(songToDelete.path)  // Pass the song path to the ViewModel
-        songs = songs.toMutableList().apply { removeAt(position) } // Remove song from list
-        notifyItemRemoved(position) // Notify RecyclerView about the removed item
-    }
-
-
 }

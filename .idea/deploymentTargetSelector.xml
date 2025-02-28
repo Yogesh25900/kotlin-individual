@@ -13,7 +13,7 @@
       </SelectionState>
       <SelectionState runConfigName="bottomNavActivity">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-02-08T12:47:21.155968900Z">
+        <DropdownSelection timestamp="2025-02-28T06:45:03.487513900Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Yogesh\.android\avd\Pixel_9_Pro_XL_API_35.avd" />

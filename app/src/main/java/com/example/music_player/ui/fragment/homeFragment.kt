@@ -1,8 +1,15 @@
 package com.example.music_player.ui.fragment
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -12,21 +19,26 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.music_player.R
 import com.example.music_player.adapter.SongAdapter
 import com.example.music_player.databinding.FragmentHomeBinding
 import com.example.music_player.model.Song
 import com.example.music_player.repository.MusicPlayerRepositoryImp
 import com.example.music_player.service.MusicPlayerService
+import com.example.music_player.utils.PermissionUtils
 import com.example.music_player.viewModel.MusicPlayerViewModel
 
 class homeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+    private val REQUEST_CODE_STORAGE_PERMISSION = 1001
 
     private lateinit var musicPlayerViewModel: MusicPlayerViewModel
     private lateinit var songAdapter: SongAdapter
@@ -43,6 +55,9 @@ class homeFragment : Fragment() {
     ): View? {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         setHasOptionsMenu(true);
+
+        setupItemTouchHelper()
+
 
         return binding.root
     }
@@ -62,6 +77,8 @@ class homeFragment : Fragment() {
             else -> super.onOptionsItemSelected(item)
         }
     }
+
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -297,6 +314,49 @@ class homeFragment : Fragment() {
             .commit()
     }
 
+
+    private fun setupItemTouchHelper() {
+        val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                val songPath = songAdapter.songs[position].path
+                if (!PermissionUtils.hasPermissions(requireContext())) {
+                    PermissionUtils.requestManageExternalStoragePermission(requireContext())
+                    Toast.makeText(requireContext(), "Please allow storage access to delete songs", Toast.LENGTH_LONG).show()
+                    return
+                }
+
+
+                songAdapter.deleteSong(position)
+            }
+
+            override fun onChildDraw(
+                c: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                if (dX < 0) {
+                    val itemView = viewHolder.itemView
+                    val background = ColorDrawable(Color.RED)
+                    background.setBounds(itemView.left + dX.toInt(), itemView.top, itemView.right, itemView.bottom)
+                    background.draw(c)
+                }
+            }
+        }
+
+        ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(binding.songRecyclerView)
+    }
 
 
 

@@ -4,32 +4,46 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import com.example.music_player.R
+import com.example.music_player.databinding.FragmentSignupBinding
+import com.example.music_player.repository.userAuthRepositoryImp
+import com.example.music_player.viewmodel.userAuthViewModel
 
 class signupFragment : Fragment() {
+    private lateinit var  viewModel: userAuthViewModel
+
+    private var _binding: FragmentSignupBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_signup, container, false)
+        // Inflate the layout using ViewBinding
+        _binding = FragmentSignupBinding.inflate(inflater, container, false)
 
-        val etName = view.findViewById<EditText>(R.id.etName)
-        val etEmail = view.findViewById<EditText>(R.id.etEmail)
-        val etPassword = view.findViewById<EditText>(R.id.etPassword)
-        val etConfirmPassword = view.findViewById<EditText>(R.id.etConfirmPassword)
-        val btnSignup = view.findViewById<Button>(R.id.btnSignup)
-     val tvlogin= view.findViewById<TextView>(R.id.tvlogin)
-        btnSignup.setOnClickListener {
-            val name = etName.text.toString().trim()
-            val email = etEmail.text.toString().trim()
-            val password = etPassword.text.toString().trim()
-            val confirmPassword = etConfirmPassword.text.toString().trim()
+
+
+        viewModel = userAuthViewModel(userAuthRepositoryImp())
+        viewModel.authResult.observe(viewLifecycleOwner, Observer { result ->
+            val (success, message) = result
+            if (success) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                // You can navigate to login or home screen after successful signup
+                openLoginFragment()
+            } else {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+            }
+        })
+        // Access UI components directly through binding
+        binding.btnSignup.setOnClickListener {
+            val name = binding.etName.text.toString().trim()
+            val email = binding.etEmail.text.toString().trim()
+            val password = binding.etPassword.text.toString().trim()
+            val confirmPassword = binding.etConfirmPassword.text.toString().trim()
 
             if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
                 Toast.makeText(requireContext(), "All fields are required", Toast.LENGTH_SHORT).show()
@@ -37,24 +51,29 @@ class signupFragment : Fragment() {
                 Toast.makeText(requireContext(), "Passwords do not match", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(requireContext(), "Signup Successful!", Toast.LENGTH_SHORT).show()
-                // TODO: Handle user registration (e.g., save to database or Firebase)
+                viewModel.signUp(email, password, name)
+
             }
         }
 
-        tvlogin.setOnClickListener {
-                openLoginFragment()
+        // Set up the login TextView to navigate to the login fragment
+        binding.tvlogin.setOnClickListener {
+            openLoginFragment()
         }
 
-        return view
+        return binding.root
     }
 
     private fun openLoginFragment() {
-
-
         parentFragmentManager.beginTransaction()
             .replace(R.id.framelayout, loginFragment())
             .addToBackStack(null)
             .commit()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Nullify the binding to avoid memory leaks
+        _binding = null
+    }
 }

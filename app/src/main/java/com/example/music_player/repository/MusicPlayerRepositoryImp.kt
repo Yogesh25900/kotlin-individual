@@ -1,11 +1,31 @@
 package com.example.music_player.repository
+import android.Manifest
+import java.io.File
 
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
 import android.provider.MediaStore
+import android.provider.Settings
 import android.util.Log
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.example.music_player.model.Song
+import com.google.firebase.Firebase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import java.io.IOException
 
 class MusicPlayerRepositoryImp(private val context: Context) : MusicPlayerInterface {
@@ -14,6 +34,48 @@ class MusicPlayerRepositoryImp(private val context: Context) : MusicPlayerInterf
     private var songList: List<Song> = listOf()
     private var currentIndex = 0  // Track current song index
     private var isPlaying = false  // Track playing state
+    private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+
+
+
+
+
+    override fun deleteSong(songPath: String): Boolean {
+        Log.d("DeleteSong", "Attempting to delete song at path: $songPath")
+
+        // Check if file exists
+        val songFile = File(songPath)
+        if (!songFile.exists()) {
+            Log.d("DeleteSong", "File does not exist at path: $songPath")
+            return false
+        }
+
+        // Check Permissions
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                Log.d("DeleteSong", "No write permissions for the song file at: $songPath")
+                return false
+            }
+        } else {
+            if (!Environment.isExternalStorageManager()) {
+                Log.d("DeleteSong", "No Manage External Storage permission for: $songPath")
+                return false
+            }
+        }
+
+        // Try deleting the file
+        val deleted = songFile.delete()
+        if (deleted) {
+            Log.d("DeleteSong", "Song deleted successfully: $songPath")
+            return true
+        } else {
+            Log.d("DeleteSong", "Failed to delete song. It might be in use or protected.")
+            return false
+        }
+    }
+
+
+
 
     init {
         mediaPlayer = MediaPlayer()
@@ -22,6 +84,55 @@ class MusicPlayerRepositoryImp(private val context: Context) : MusicPlayerInterf
             // Automatically play next song when the current song ends
             nextSong()
         }
+    }
+
+
+    private val _onlinesongList = MutableLiveData<List<Song>>()
+    val onlinesonglist: LiveData<List<Song>> get() = _onlinesongList
+
+
+    fun fetchSongsFromFirebase(onError: (Exception) -> Unit) {
+        val songsRef = database.getReference("songs")
+
+        songsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val songs = mutableListOf<Song>()
+
+                for (document in snapshot.children) {
+                    val id = document.child("songId").getValue(String::class.java) ?: ""
+                    val title = document.child("songTitle").getValue(String::class.java) ?: "Unknown Title"
+                    val url = document.child("url").getValue(String::class.java) ?: ""
+                    val artist = document.child("artist").getValue(String::class.java) ?: "Unknown Artist"
+
+                    songs.add(Song(
+                        id, title, url, artist, null,
+                        duration = 0,
+                        albumArt = null,
+                        selected = true,
+                        albumId = null
+                    ))
+
+                    // Log the details of each song
+                    Log.d("FetchSongs", "Song found - ID: $id, Title: $title, Artist: $artist, URL: $url, Duration: 0, Selected: true")
+                }
+
+                // Log the total number of songs found
+                if (songs.isNotEmpty()) {
+                    Log.d("FetchSongs", "Total songs fetched: ${songs.size}")
+                } else {
+                    Log.d("FetchSongs", "No songs found")
+                }
+
+                // Update the LiveData with the fetched songs
+                _onlinesongList.value = songs
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Log any error that occurs
+                Log.e("FetchSongs", "Error fetching songs: ${error.message}")
+                onError(error.toException())
+            }
+        })
     }
 
     // Fetch songs from local storage

@@ -62,6 +62,23 @@ class MusicPlayerViewModel(private val musicPlayerRepository: MusicPlayerReposit
         startProgressUpdater()
     }
 
+    private val _songDeletionResult = MutableLiveData<Boolean>()
+    val songDeletionResult: LiveData<Boolean> get() = _songDeletionResult
+
+    // Function to delete a song
+    fun deleteSong(songPath: String) {
+        val isDeleted = musicPlayerRepository.deleteSong(songPath)
+        if (isDeleted) {
+            // After deletion, update the list of songs
+            val updatedSongs = _songs.value?.filter { it.path != songPath } ?: emptyList()
+            _songs.postValue(updatedSongs)
+        }
+        _songDeletionResult.value = isDeleted
+    }
+
+
+
+
     fun pauseSong() {
         _currentPosition.postValue(musicPlayerRepository.getCurrentPosition())
         musicPlayerRepository.pauseSong()
@@ -156,6 +173,7 @@ class MusicPlayerViewModel(private val musicPlayerRepository: MusicPlayerReposit
         // For example, returning a dummy song:
         return Song(id = songId, name = "Song Name", artistName = "Artist", albumArt = null, path = "", albumName = "", albumId = 0L, duration = 0L)
     }
+
 
 
 

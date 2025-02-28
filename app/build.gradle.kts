@@ -51,7 +51,8 @@ dependencies {
     implementation(libs.androidx.runner)
     implementation(libs.androidx.espresso.core)
     implementation(libs.androidx.navigation.fragment.ktx)
-    implementation(libs.firebase.auth.ktx)
+    implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
+    implementation(libs.androidx.recyclerview)// Downgrade to 23.1.0
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

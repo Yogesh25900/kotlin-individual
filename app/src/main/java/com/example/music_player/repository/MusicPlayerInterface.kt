@@ -10,6 +10,8 @@ interface MusicPlayerInterface {
     fun fetchSongs(): List<Song>
     fun getCurrentSong(): Song?
 
+    fun deleteSong(songPath: String): Boolean
+
     // Play the selected song
     fun playSong(song: Song)
 
