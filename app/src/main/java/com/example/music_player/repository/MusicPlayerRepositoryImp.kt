@@ -21,6 +21,7 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.music_player.model.Song
+import com.example.music_player.model.onlineSong
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -87,8 +88,8 @@ class MusicPlayerRepositoryImp(private val context: Context) : MusicPlayerInterf
     }
 
 
-    private val _onlinesongList = MutableLiveData<List<Song>>()
-    val onlinesonglist: LiveData<List<Song>> get() = _onlinesongList
+    private val _onlinesongList = MutableLiveData<List<onlineSong>>()
+    val onlinesonglist: LiveData<List<onlineSong>> get() = _onlinesongList
 
 
     fun fetchSongsFromFirebase(onError: (Exception) -> Unit) {
@@ -96,21 +97,16 @@ class MusicPlayerRepositoryImp(private val context: Context) : MusicPlayerInterf
 
         songsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val songs = mutableListOf<Song>()
+                val songs = mutableListOf<onlineSong>()
 
                 for (document in snapshot.children) {
                     val id = document.child("songId").getValue(String::class.java) ?: ""
                     val title = document.child("songTitle").getValue(String::class.java) ?: "Unknown Title"
-                    val url = document.child("url").getValue(String::class.java) ?: ""
+                    val url = document.child("songUrl").getValue(String::class.java) ?: ""
                     val artist = document.child("artist").getValue(String::class.java) ?: "Unknown Artist"
 
-                    songs.add(Song(
-                        id, title, url, artist, null,
-                        duration = 0,
-                        albumArt = null,
-                        selected = true,
-                        albumId = null
-                    ))
+                    songs.add(onlineSong(
+                        id, title,url,artist))
 
                     // Log the details of each song
                     Log.d("FetchSongs", "Song found - ID: $id, Title: $title, Artist: $artist, URL: $url, Duration: 0, Selected: true")

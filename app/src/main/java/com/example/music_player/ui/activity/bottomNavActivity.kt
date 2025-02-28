@@ -14,6 +14,7 @@ import com.example.music_player.ui.fragment.PlaylistFragment
 import com.example.music_player.ui.fragment.homeFragment
 import com.example.music_player.ui.fragment.loginFragment
 import com.example.music_player.ui.fragment.musicPlayerFragment
+import com.example.music_player.ui.fragment.onlineSongFragment
 import com.example.music_player.ui.fragment.profileFragment
 import com.example.music_player.ui.fragment.signupFragment
 // Corrected class name (ProfileFragment)
@@ -56,7 +57,7 @@ class bottomNavActivity : AppCompatActivity() {  // Corrected class name (Bottom
                 R.id.nav_home -> homeFragment()  // Corrected fragment class name
                 R.id.nav_search -> musicPlayerFragment()  // Corrected fragment class name
                 R.id.nav_profile -> PlaylistFragment()  // Corrected fragment class name
-                R.id.nav_user -> loginFragment()
+                R.id.nav_user -> onlineSongFragment()
                 else -> homeFragment()  // Default to homeFragment
             }
 

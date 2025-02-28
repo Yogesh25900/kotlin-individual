@@ -9,18 +9,18 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.music_player.R
-import com.example.music_player.model.Song
+import com.example.music_player.model.onlineSong
 import com.example.music_player.viewModel.OnlineSongViewModel
 
 class OnlineSongAdapter(
-    private val onClick: (Song) -> Unit,
+    private val onClick: (onlineSong) -> Unit,
     private val onCloseSelection: () -> Unit,
     private val songViewModel: OnlineSongViewModel
 ) : RecyclerView.Adapter<OnlineSongAdapter.SongViewHolder>() {
 
     var selectionMode = false
     private val selectedSongsIds = mutableListOf<String>()
-    private var songs: List<Song> = emptyList()
+    private var songs: List<onlineSong> = emptyList()
 
     init {
         songViewModel.songList.observeForever { updatedSongs ->
@@ -43,9 +43,9 @@ class OnlineSongAdapter(
                 song.selected = !song.selected
                 holder.updateSelectionUI(song)
                 if (song.selected) {
-                    selectedSongsIds.add(song.id)
+                    selectedSongsIds.add(song.songId)
                 } else {
-                    selectedSongsIds.remove(song.id)
+                    selectedSongsIds.remove(song.songId)
                 }
                 notifyItemChanged(position)
 
@@ -60,7 +60,7 @@ class OnlineSongAdapter(
 
         // Long press logic for toggling selection mode
         holder.itemView.setOnLongClickListener {
-            Log.d("MusicPlayer", "Long press detected for song: ${song.name}")
+            Log.d("MusicPlayer", "Long press detected for song: ${song.songTitle}")
             toggleSelectionMode(song)
             true
         }
@@ -76,9 +76,9 @@ class OnlineSongAdapter(
         private val albumArtImageView: ImageView = itemView.findViewById(R.id.imgThumbnail)
         private val selectCheckBox: ImageView = itemView.findViewById(R.id.imgSelect)
 
-        fun bind(song: Song) {
-            songNameTextView.text = song.name
-            artistTextView.text = song.artistName
+        fun bind(song: onlineSong) {
+            songNameTextView.text = song.songTitle
+            artistTextView.text = song.artist ?: "Unknown Artist"
 
             Glide.with(itemView.context)
                 .load(song.albumArt ?: R.drawable.music)
@@ -89,18 +89,18 @@ class OnlineSongAdapter(
             updateSelectionUI(song)
         }
 
-        fun updateSelectionUI(song: Song) {
+        fun updateSelectionUI(song: onlineSong) {
             selectCheckBox.setImageResource(
                 if (song.selected) R.drawable.uncheck else R.drawable.checkbox
             )
         }
     }
 
-    private fun toggleSelectionMode(song: Song) {
+    private fun toggleSelectionMode(song: onlineSong) {
         if (!selectionMode) {
             selectionMode = true
             song.selected = true
-            selectedSongsIds.add(song.id)
+            selectedSongsIds.add(song.songId)
             notifyDataSetChanged()
         }
     }
@@ -115,8 +115,8 @@ class OnlineSongAdapter(
 
     fun getSelectedSongs(): MutableList<String> = selectedSongsIds
 
-    private fun onSongClick(song: Song) {
-        Log.d("MusicPlayer", "Playing song: ${song.name}")
+    private fun onSongClick(song: onlineSong) {
+        Log.d("MusicPlayer", "Playing song: ${song.songTitle}")
         onClick(song)
     }
 }
