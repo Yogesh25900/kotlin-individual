@@ -9,7 +9,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-
 class MusicPlayerViewModel(private val musicPlayerRepository: MusicPlayerRepositoryImp) : ViewModel() {
 
     // LiveData to observe songs
@@ -33,8 +32,9 @@ class MusicPlayerViewModel(private val musicPlayerRepository: MusicPlayerReposit
 
     private var progressUpdaterJob: Job? = null
 
-    private val _selectedSongs = MutableLiveData<List<Song>>(emptyList()) // LiveData for selected songs
-    val selectedSongs: LiveData<List<Song>> get() = _selectedSongs
+    // LiveData for selected songs, changed to store List<String> (IDs only)
+    private val _selectedSongs = MutableLiveData<List<String>>(emptyList()) // LiveData for song IDs
+    val selectedSongs: LiveData<List<String>> get() = _selectedSongs
 
     init {
         fetchSongs()
@@ -121,21 +121,43 @@ class MusicPlayerViewModel(private val musicPlayerRepository: MusicPlayerReposit
         stopProgressUpdater()
     }
 
-    // Update selected songs
-    fun updateSelectedSongs(newSelectedSongs: List<Song>) {
-        _selectedSongs.value = newSelectedSongs
+    // Update selected songs by their IDs only
+    fun updateSelectedSongs(newSelectedSongIds: List<String>) {
+        _selectedSongs.value = newSelectedSongIds  // Update with only song IDs
+//        Log.d("update", "Selected song IDs updated: ${newSelectedSongIds.joinToString()}")
     }
 
-    // Toggle song selection
+    // Toggle song selection (now based on song IDs)
     fun toggleSongSelection(song: Song) {
         val currentList = _selectedSongs.value?.toMutableList() ?: mutableListOf()
-        if (currentList.contains(song)) {
-            currentList.remove(song)
+        val songId = song.id  // Assuming `song.id` is a string
+        if (currentList.contains(songId)) {
+            currentList.remove(songId)
         } else {
-            currentList.add(song)
+            currentList.add(songId)
         }
         updateSelectedSongs(currentList)
     }
+    // ViewModel Method
+    fun getSongsByIds(songIds: List<String>): LiveData<List<Song>> {
+        val songListLiveData = MutableLiveData<List<Song>>()
+
+        // Call the repository method to get songs by IDs
+        musicPlayerRepository.getSongsByIds(songIds) { songList ->
+            // Post the result to LiveData
+            songListLiveData.postValue(songList)
+        }
+
+        return songListLiveData
+    }
+
+    private fun getSongById(songId: String): Song? {
+        // You can query the database or fetch from a list
+        // For example, returning a dummy song:
+        return Song(id = songId, name = "Song Name", artistName = "Artist", albumArt = null, path = "", albumName = "", albumId = 0L, duration = 0L)
+    }
+
+
 
     // Singleton Pattern Implementation
     companion object {

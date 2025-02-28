@@ -10,9 +10,12 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import com.example.music_player.R
 import com.example.music_player.databinding.ActivityBottomNavBinding
+import com.example.music_player.ui.fragment.PlaylistFragment
 import com.example.music_player.ui.fragment.homeFragment
+import com.example.music_player.ui.fragment.loginFragment
 import com.example.music_player.ui.fragment.musicPlayerFragment
 import com.example.music_player.ui.fragment.profileFragment
+import com.example.music_player.ui.fragment.signupFragment
 // Corrected class name (ProfileFragment)
 import com.example.music_player.utils.PermissionUtils
 
@@ -52,7 +55,8 @@ class bottomNavActivity : AppCompatActivity() {  // Corrected class name (Bottom
             val selectedFragment: Fragment = when (it.itemId) {
                 R.id.nav_home -> homeFragment()  // Corrected fragment class name
                 R.id.nav_search -> musicPlayerFragment()  // Corrected fragment class name
-                R.id.nav_profile -> profileFragment()  // Corrected fragment class name
+                R.id.nav_profile -> PlaylistFragment()  // Corrected fragment class name
+                R.id.nav_user -> loginFragment()
                 else -> homeFragment()  // Default to homeFragment
             }
 

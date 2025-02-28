@@ -195,4 +195,50 @@ class MusicPlayerRepositoryImp(private val context: Context) : MusicPlayerInterf
         mediaPlayer?.release()
         mediaPlayer = null
     }
+    // Repository Method
+    override fun getSongsByIds(songIds: List<String>, callback: (List<Song>) -> Unit) {
+        val songs = mutableListOf<Song>()
+        val contentResolver = context.contentResolver
+        val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+        val projection = arrayOf(
+            MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.TITLE,
+            MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.ARTIST,
+            MediaStore.Audio.Media.ALBUM,
+            MediaStore.Audio.Media.DURATION
+        )
+
+        // Create a selection string with the song IDs
+        val selection = "${MediaStore.Audio.Media._ID} IN (${songIds.joinToString(",")})"
+
+        val cursor = contentResolver.query(uri, projection, selection, null, null)
+
+        cursor?.use {
+            val idColumn = it.getColumnIndex(MediaStore.Audio.Media._ID)
+            val titleColumn = it.getColumnIndex(MediaStore.Audio.Media.TITLE)
+            val dataColumn = it.getColumnIndex(MediaStore.Audio.Media.DATA)
+            val artistColumn = it.getColumnIndex(MediaStore.Audio.Media.ARTIST)
+            val albumColumn = it.getColumnIndex(MediaStore.Audio.Media.ALBUM)
+            val durationColumn = it.getColumnIndex(MediaStore.Audio.Media.DURATION)
+
+            while (it.moveToNext()) {
+                val id = it.getString(idColumn)
+                val title = it.getString(titleColumn)
+                val data = it.getString(dataColumn)
+                val artist = it.getString(artistColumn) ?: "Unknown Artist"
+                val album = it.getString(albumColumn) ?: "Unknown Album"
+                val duration = it.getLong(durationColumn)
+                val albumArt = getAlbumArt(data)
+
+                songs.add(Song(id, title, data, artist, album, duration, albumArt))
+            }
+        }
+
+        callback(songs) // Pass the song list to the callback
+    }
+
+
+
+
 }

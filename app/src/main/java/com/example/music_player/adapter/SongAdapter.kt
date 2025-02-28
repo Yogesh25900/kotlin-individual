@@ -30,10 +30,26 @@ class SongAdapter(
     override fun onBindViewHolder(holder: SongViewHolder, position: Int) {
         val song = songs[position]
 
-        // Regular click logic
+        // Regular click logic (plays the song)
         holder.itemView.setOnClickListener {
-            Log.d("MusicPlayer", "Item clicked: ${song.name}")
-            onSongClick(song)  // Call onSongClick for playing the song
+            if (selectionMode) {
+                song.selected = !song.selected
+                holder.updateSelectionUI(song)  // Update the selection UI
+                if (song.selected) {
+                    selectedSongsIds.add(song.id) // Add song to selected list
+                } else {
+                    selectedSongsIds.remove(song.id) // Remove song from selected list
+                }
+                updateSelectedSongs() // Update ViewModel with selected songs
+                notifyItemChanged(position)
+
+                // Exit selection mode if no songs are selected
+                if (selectedSongsIds.isEmpty()) {
+                    closeSelectionMode()
+                }
+            } else {
+                onSongClick(song)  // Regular click behavior (e.g., play song)
+            }
         }
 
         // Long press logic for toggling selection mode
@@ -45,18 +61,6 @@ class SongAdapter(
 
         // Bind song data
         holder.bind(song)
-    }
-
-    private fun toggleSelectionMode(song: Song) {
-        if (!selectionMode) {
-            // Enter selection mode and mark the song as selected
-            selectionMode = true
-            song.selected = true
-            selectedSongsIds.add(song.id)  // Add to selected list
-            Log.d("MusicPlayer", "Entering selection mode: ${song.name}")
-            updateSelectedSongs() // Update ViewModel with selected songs
-            notifyDataSetChanged()
-        }
     }
 
     override fun getItemCount(): Int = songs.size
@@ -79,38 +83,30 @@ class SongAdapter(
             // Show or hide the selection checkbox based on the selection mode
             selectCheckBox.visibility = if (selectionMode) View.VISIBLE else View.GONE
             updateSelectionUI(song) // Update the selection UI based on the song's state
-
-            // Handle the click behavior for selection mode
-            itemView.setOnClickListener {
-                if (selectionMode) {
-                    song.selected = !song.selected
-                    updateSelectionUI(song) // Update the selection UI
-                    if (song.selected) {
-                        selectedSongsIds.add(song.id) // Add song to selected list
-                    } else {
-                        selectedSongsIds.remove(song.id) // Remove song from selected list
-                    }
-                    updateSelectedSongs() // Update ViewModel with selected songs
-                    notifyItemChanged(adapterPosition)
-
-                    // Exit selection mode if no songs are selected
-                    if (selectedSongsIds.isEmpty()) {
-                        closeSelectionMode()
-                    }
-                } else {
-                    onClick(song)  // Regular click behavior (e.g., play song)
-                }
-            }
         }
 
-        private fun updateSelectionUI(song: Song) {
+        // Updates the checkbox UI to show whether the song is selected or not
+        fun updateSelectionUI(song: Song) {
             selectCheckBox.setImageResource(
                 if (song.selected) R.drawable.uncheck else R.drawable.checkbox
             )
         }
     }
 
-    // Close selection mode
+    // Toggle selection mode on long press
+    private fun toggleSelectionMode(song: Song) {
+        if (!selectionMode) {
+            // Enter selection mode and mark the song as selected
+            selectionMode = true
+            song.selected = true
+            selectedSongsIds.add(song.id) // Add to selected list
+            Log.d("MusicPlayer", "Entering selection mode: ${song.name}")
+            updateSelectedSongs() // Update ViewModel with selected songs
+            notifyDataSetChanged()
+        }
+    }
+
+    // Close selection mode and reset selection states
     fun closeSelectionMode() {
         selectionMode = false
         songs.forEach { it.selected = false }  // Reset selection state
@@ -121,13 +117,12 @@ class SongAdapter(
 
     // Update selected songs in ViewModel
     private fun updateSelectedSongs() {
-        val selectedSongs = songs.filter { it.selected }
-        songViewModel.updateSelectedSongs(selectedSongs)
-        Log.d("MusicPlayer", "Selected songs for playlist: ${selectedSongsIds.joinToString()}")
+        val selectedSongIds = songs.filter { it.selected }.map { it.id }  // Extract IDs of selected songs
+        songViewModel.updateSelectedSongs(selectedSongIds)  // Pass the IDs to ViewModel
     }
 
 
-    // Update songs list
+    // Update songs list and refresh the adapter
     fun updateSongs(newSongs: List<Song>) {
         songs = newSongs
         notifyDataSetChanged()

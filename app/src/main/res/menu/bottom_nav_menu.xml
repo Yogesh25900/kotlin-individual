@@ -10,6 +10,10 @@
         android:title="Player" />
     <item
         android:id="@+id/nav_profile"
+        android:icon="@drawable/playlist"
+        android:title="Playlist" />
+    <item
+        android:id="@+id/nav_user"
         android:icon="@drawable/profile"
-        android:title="Profile" />
+        android:title="Online" />
 </menu>

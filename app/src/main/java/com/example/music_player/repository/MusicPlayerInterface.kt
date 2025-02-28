@@ -27,6 +27,7 @@ interface MusicPlayerInterface {
 
     // Get the current position of the song
     fun getCurrentPosition(): Long
+   fun getSongsByIds(songIds: List<String>, callback: (List<Song>) -> Unit)
 
     // Seek to a specific position in the song
     fun seekTo(position: Long)

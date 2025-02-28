@@ -7,10 +7,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.music_player.R
 import com.example.music_player.adapter.SongAdapter
@@ -32,13 +35,32 @@ class homeFragment : Fragment() {
     private var selectionMode = false
 
     private val selectedSongsIds = mutableListOf<String>() // Track selected song IDs
+    lateinit  var selectedSonglist: List<String>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        setHasOptionsMenu(true);
+
         return binding.root
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        // Inflate the menu
+        inflater.inflate(R.menu.toolbar_menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.nav_home -> {
+                // Handle menu item click
+                openPlaylistFragment()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -58,7 +80,9 @@ class homeFragment : Fragment() {
         binding.songRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.songRecyclerView.adapter = songAdapter
 
-        // Observe song list
+        // Obser
+        //
+        // ve song list
         musicPlayerViewModel.songs.observe(viewLifecycleOwner) { songs ->
             Log.d("HomeFragment", "Song List: $songs") // Log song list
             songAdapter.songs = songs
@@ -76,6 +100,17 @@ class homeFragment : Fragment() {
                 if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
             )
         }
+
+
+        musicPlayerViewModel.selectedSongs.observe(viewLifecycleOwner, Observer { songIds ->
+            // Update UI based on the list of selected song IDs
+            // For example, updating an adapter or showing a list of selected songs
+            selectedSonglist = songIds
+            Log.d("YourFragment", "Selected songs updated from home: $songIds")
+
+            // You can use this list of song IDs to fetch the full Song objects if needed,
+            // or just update your UI directly with the list of IDs.
+        })
 
         // Play/Pause button
         binding.miniPlayerPlayPause.setOnClickListener {
@@ -124,6 +159,7 @@ class homeFragment : Fragment() {
             songAdapter.notifyDataSetChanged()
             binding.btnCloseSelection.visibility = View.GONE
         }
+
     }
 
     // Handle song item click
@@ -151,8 +187,14 @@ class homeFragment : Fragment() {
             // Notify that a specific item has changed (to update selection state visually)
             songAdapter.notifyItemChanged(position)
 
+
+            musicPlayerViewModel.selectedSongs.observe(viewLifecycleOwner, Observer { selectedSongs ->
+                // Handle the updated list of selected songs
+                // For example, update the UI with the selected songs
+                Log.d("MusicPlayer", "Selected songs for playlist from home: ${selectedSongs.joinToString()}")
+
+            })
             // Log the selected songs' list (for debugging)
-            Log.d("MusicPlayer", "Selected songs for playlist: ${selectedSongsIds.joinToString()}")
 
             // Exit selection mode if no items are selected
             if (selectedSongsIds.isEmpty()) {
@@ -238,6 +280,23 @@ class homeFragment : Fragment() {
         // Hide the close selection button
         binding.btnCloseSelection.visibility = View.GONE
     }
+
+    private fun openPlaylistFragment() {
+
+        val bundle = Bundle().apply {
+            putStringArrayList("selectedSongIds", ArrayList(selectedSonglist))
+        }
+
+        val playlistFragment = PlaylistFragment().apply {
+            arguments = bundle
+        }
+
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.framelayout, playlistFragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
 
 
 
