@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CircularImage">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item> <!-- 50% to make it a circle -->
+    </style>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Set default font for all text views -->
+        <item name="android:fontFamily">@font/black</item>
+    </style>
+</resources>

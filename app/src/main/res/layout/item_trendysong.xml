@@ -1,41 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:gravity="center"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="4dp">
 
-    <androidx.cardview.widget.CardView
+    <!-- FrameLayout to hold the image with circular border -->
+    <FrameLayout
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:background="@drawable/border_background"
+        android:padding="5dp">  <!-- Custom border background -->
+
+        <!-- ImageView for the song image -->
+        <ImageView
+            android:id="@+id/songImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"
+            android:src="@drawable/maahi" /> <!-- Ensures the image is centered and cropped properly -->
+
+    </FrameLayout>
+
+    <!-- TextView for song title, placed below the image -->
+    <TextView
+        android:id="@+id/songTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        app:cardBackgroundColor="#FFC107"
-        app:cardCornerRadius="16dp"
-        android:elevation="4dp">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:id="@+id/podcastTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Podcast Title"
-                android:textColor="#000"
-                android:textSize="16sp" />
-
-            <ImageView
-                android:id="@+id/podcastImage"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_gravity="end"
-                android:src="@drawable/musician" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="Song Title"
+        android:textColor="@color/holoWhite"
+        android:textSize="16sp" /> <!-- Margin between image and title -->
 
 </LinearLayout>

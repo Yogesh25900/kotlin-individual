@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import com.example.music_player.model.Playlist
 import com.google.firebase.database.*
 
-class PlaylistRepository {
+class PlaylistRepository:playlistRepositoryInterface {
 
     private val firebaseDatabase: FirebaseDatabase = FirebaseDatabase.getInstance()
     private val playlistsRef: DatabaseReference = firebaseDatabase.reference.child("playlists")
@@ -16,7 +16,7 @@ class PlaylistRepository {
     val playlistsLiveData: LiveData<List<Playlist>> = _playlistsLiveData
 
     // Fetch playlists from Firebase
-    fun fetchPlaylists() {
+    override fun fetchPlaylists() {
         Log.d("PlaylistRepository", "Fetching playlists...")
         playlistsRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -41,7 +41,7 @@ class PlaylistRepository {
     }
 
     // Create a new playlist in Firebase
-    fun createPlaylist(name: String) {
+    override fun createPlaylist(name: String) {
         val playlistId = playlistsRef.push().key ?: return
         // Initialize songIds as an empty Map
         val songIdsMap = mutableMapOf<String, Boolean>()
@@ -64,7 +64,7 @@ class PlaylistRepository {
     }
 
 
-    fun getAllPlaylists(): LiveData<List<Playlist>> {
+    override fun getAllPlaylists(): LiveData<List<Playlist>> {
         val playlistsLiveData = MutableLiveData<List<Playlist>>()
 
         playlistsRef.addValueEventListener(object : ValueEventListener {
@@ -83,7 +83,7 @@ class PlaylistRepository {
         return playlistsLiveData
     }
 
-    fun addSongsToPlaylist(playlistId: String, songIds: List<String>): LiveData<Boolean> {
+    override fun addSongsToPlaylist(playlistId: String, songIds: List<String>): LiveData<Boolean> {
         val result = MutableLiveData<Boolean>()
 
         playlistsRef.child(playlistId).child("songIds").get().addOnSuccessListener { dataSnapshot ->
@@ -112,6 +112,23 @@ class PlaylistRepository {
 
         return result
     }
+
+    override fun deletePlaylist(playlistId: String) {
+        playlistsRef.child(playlistId).removeValue()
+            .addOnSuccessListener {
+                Log.d("PlaylistRepository", "Playlist deleted successfully: $playlistId")
+
+                // Update local LiveData by removing the playlist
+                _playlistsLiveData.value?.let {
+                    val updatedList = it.filter { playlist -> playlist.id != playlistId }
+                    _playlistsLiveData.postValue(updatedList)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("PlaylistRepository", "Error deleting playlist: ${e.message}")
+            }
+    }
+
 
 
 }

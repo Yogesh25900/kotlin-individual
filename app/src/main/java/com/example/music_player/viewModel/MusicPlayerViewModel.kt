@@ -93,11 +93,14 @@ class MusicPlayerViewModel(private val musicPlayerRepository: MusicPlayerReposit
     }
 
     fun nextSong() {
-        Log.d("MusicPlayerViewModel", "Next button clicked")
+        Log.d("MusicPlayerViewModel", "Next button clicked or song completed")
         musicPlayerRepository.nextSong()
-        _currentSong.postValue(musicPlayerRepository.getCurrentSong()) // Update UI
-        _isPlaying.postValue(true)
+        val nextSong = musicPlayerRepository.getCurrentSong() // Get the next song
+        _currentSong.postValue(nextSong) // Update the current song LiveData
+        _isPlaying.postValue(true) // Make sure the song is marked as playing
+        Log.d("MusicPlayerViewModel", "Current song updated: ${nextSong?.name}")
     }
+
 
     fun previousSong() {
         Log.d("MusicPlayerViewModel", "Previous button clicked")

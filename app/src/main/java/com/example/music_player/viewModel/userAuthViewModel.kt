@@ -1,4 +1,4 @@
-package com.example.music_player.viewmodel
+package com.example.music_player.viewModel
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -52,4 +52,30 @@ class userAuthViewModel(private val repository: userAuthRepositoryImp) : ViewMod
             }
         }
     }
-}
+    private val _userDetails = MutableLiveData<Map<String, Any>?>()
+    val userDetails: LiveData<Map<String, Any>?> get() = _userDetails
+
+    fun fetchUserDetailsById(userId: String) {
+        repository.getUserDetailsById(userId) { success, data ->
+            if (success) {
+                // Set the user details if the request was successful
+                _userDetails.value = data
+            } else {
+                // Set the error message if the request failed
+            }
+        }
+    }
+        val _userUid = MutableLiveData<String>()
+        val userUid: LiveData<String> = _userUid
+
+        fun getCurrentUser() {
+            val user = repository.getCurrentAuthUser()
+            if (user != null) {
+                _userUid.value = user.uid
+            } else {
+                // Handle the case where the user is not logged in
+                _userUid.value = "" // Or show an appropriate message or error
+            }
+
+
+    }}

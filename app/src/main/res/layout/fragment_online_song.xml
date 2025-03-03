@@ -25,7 +25,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Hey Jordi 👋"
+            android:text="Hey  👋"
             android:textColor="#FFFFFF"
             android:textSize="22sp"
             android:textStyle="bold" />
@@ -48,13 +48,13 @@
         android:hint="Search here"
         android:paddingHorizontal="16dp"
         android:textColor="#FFFFFF"
-        android:background="@drawable/search_bar_bg"
-        android:drawableStart="@drawable/searchinterface"
-        android:drawablePadding="10dp"
-        android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/userGreeting"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:textColorHint="#808080"
+    android:background="@drawable/search_bar_bg"
+    android:drawablePadding="10dp"
+    android:textSize="16sp"
+    app:layout_constraintTop_toBottomOf="@id/userGreeting"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- Category Filter Buttons -->
 

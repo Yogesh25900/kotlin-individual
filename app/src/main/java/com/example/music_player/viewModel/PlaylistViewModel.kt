@@ -22,4 +22,11 @@ class PlaylistViewModel(private val repository: PlaylistRepository) : ViewModel(
         return repository.addSongsToPlaylist(playlistId, songIds)
     }
 
+    fun deletePlaylist(playlistId: String) {
+        // Call the repository method to delete the playlist
+        repository.deletePlaylist(playlistId)
+
+
+    }
+
 }

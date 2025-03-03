@@ -1,6 +1,7 @@
 package com.example.music_player.ui.fragment
 
 import android.graphics.BitmapFactory
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -47,6 +48,7 @@ class musicPlayerFragment : Fragment() {
                 song?.let { updateUI() }
             }
 
+
             musicPlayerViewModel.songProgress.observe(viewLifecycleOwner) { progress ->
                 if (!isUserSeeking) {
                     binding.seekBar.progress = progress.toInt()
@@ -88,13 +90,13 @@ class musicPlayerFragment : Fragment() {
 
             binding.btnNext.setOnClickListener {
                 musicPlayerViewModel.nextSong()
-                Toast.makeText(requireContext(), "Next button clicked", Toast.LENGTH_LONG).show()
+//                Toast.makeText(requireContext(), "Next button clicked", Toast.LENGTH_LONG).show()
             }
 
             binding.btnPrevious.setOnClickListener {
                 musicPlayerViewModel.previousSong()
-                Toast.makeText(requireContext(), "Previous button clicked", Toast.LENGTH_LONG)
-                    .show()
+//                Toast.makeText(requireContext(), "Previous button clicked", Toast.LENGTH_LONG)
+//                    .show()
             }
         }
 

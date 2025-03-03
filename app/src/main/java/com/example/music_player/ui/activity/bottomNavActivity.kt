@@ -47,7 +47,7 @@ class bottomNavActivity : AppCompatActivity() {  // Corrected class name (Bottom
         // Set up the Toolbar
         setSupportActionBar(binding.toolbar)
         supportActionBar?.apply {
-            title = "Music Player"
+            title = "Groovy Play"
             setDisplayHomeAsUpEnabled(false) // If you want a back button, set to true
         }
 

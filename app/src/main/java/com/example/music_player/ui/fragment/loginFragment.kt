@@ -1,6 +1,7 @@
 package com.example.music_player.ui.fragment
 
 
+import android.content.Context
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -13,7 +14,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.music_player.R
 import com.example.music_player.databinding.FragmentLoginBinding
 import com.example.music_player.repository.userAuthRepositoryImp
-import com.example.music_player.viewmodel.userAuthViewModel
+import com.example.music_player.viewModel.userAuthViewModel
 
 class loginFragment : Fragment() {
     private lateinit var  viewModel: userAuthViewModel
@@ -51,11 +52,22 @@ class loginFragment : Fragment() {
             val password = binding.etPassword.text.toString().trim()
 
             if (validateInput(email, password)) {
-                viewModel.login(email,password)
+                // Call the ViewModel's login function
+                viewModel.login(email, password)
+
+                // Assuming login is successful, save login status in SharedPreferences
+                val sharedPreferences = requireActivity().getSharedPreferences("userLogPrefs", Context.MODE_PRIVATE)
+                val editor = sharedPreferences.edit()
+                editor.putBoolean("isLoggedIn", true) // Save login status as true
+                editor.apply()
+
+                // Navigate to the HomeFragment (assuming login is successful)
+                openFragment(onlineSongFragment())
             }
         }
 
-            // Navigate to Signup Page
+
+        // Navigate to Signup Page
         binding.tvSignup.setOnClickListener {
             openFragment(signupFragment())
         }

@@ -30,7 +30,7 @@ class OnlineSongAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_song, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_onlinesong, parent, false)
         return SongViewHolder(view)
     }
 

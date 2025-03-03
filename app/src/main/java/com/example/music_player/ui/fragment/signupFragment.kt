@@ -10,7 +10,7 @@ import androidx.lifecycle.Observer
 import com.example.music_player.R
 import com.example.music_player.databinding.FragmentSignupBinding
 import com.example.music_player.repository.userAuthRepositoryImp
-import com.example.music_player.viewmodel.userAuthViewModel
+import com.example.music_player.viewModel.userAuthViewModel
 
 class signupFragment : Fragment() {
     private lateinit var  viewModel: userAuthViewModel

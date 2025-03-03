@@ -15,30 +15,24 @@ class userAuthRepositoryImp : userAuthInterface {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Get the signed-in user
                     val user = auth.currentUser
-                    // Store user data in Firebase Database, including the name
                     storeUserData(user, email, name, onResult)
                 } else {
-                    // Sign up failed
                     onResult(false, task.exception?.message ?: "Error during sign up")
                 }
             }
     }
 
-    // Store additional user data (e.g., name, email) in Firebase Realtime Database
     private fun storeUserData(user: FirebaseUser?, email: String, name: String?, onResult: (Boolean, String) -> Unit) {
         val userId = user?.uid ?: return
         val userRef = database.getReference("users").child(userId)
 
-        // Create a map to store the user data
         val userData = mapOf(
             "email" to email,
-            "name" to name,  // Assuming 'name' is passed as a parameter
+            "name" to name,
             "uid" to userId
         )
 
-        // Store data in the Firebase Realtime Database
         userRef.setValue(userData)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -54,10 +48,8 @@ class userAuthRepositoryImp : userAuthInterface {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Login successful
                     onResult(true, "Login successful")
                 } else {
-                    // Login failed
                     onResult(false, task.exception?.message ?: "Error during login")
                 }
             }
@@ -68,13 +60,12 @@ class userAuthRepositoryImp : userAuthInterface {
         auth.signOut()
     }
 
-    // Optional: You can also add a function to check if the user is already logged in
-    fun isUserLoggedIn(): Boolean {
+    override fun isUserLoggedIn(): Boolean {
         return auth.currentUser != null
     }
 
     // Retrieve current user details from Firebase Database (optional)
-    fun getUserDetails(onResult: (Boolean, Map<String, Any>?) -> Unit) {
+    override fun getUserDetails(onResult: (Boolean, Map<String, Any>?) -> Unit) {
         val currentUser = auth.currentUser
         currentUser?.uid?.let { userId ->
             val userRef = database.getReference("users").child(userId)
@@ -86,6 +77,24 @@ class userAuthRepositoryImp : userAuthInterface {
                 } else {
                     onResult(false, null)
                 }
+            }
+        }
+    }
+
+    fun getCurrentAuthUser(): FirebaseUser? {
+        return auth.currentUser
+    }
+
+    // Retrieve user details by user ID
+    override fun getUserDetailsById(userId: String, onResult: (Boolean, Map<String, Any>?) -> Unit) {
+        val userRef = database.getReference("users").child(userId)
+
+        userRef.get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val userData = task.result?.value as? Map<String, Any>
+                onResult(true, userData)
+            } else {
+                onResult(false, null)
             }
         }
     }

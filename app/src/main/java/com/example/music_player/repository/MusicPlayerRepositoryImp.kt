@@ -38,7 +38,15 @@ class MusicPlayerRepositoryImp(private val context: Context) : MusicPlayerInterf
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
 
 
+    init {
+        Log.d("MusicPlayerRepository", "Repository initialized.")
 
+        // Set the completion listener to handle moving to the next song when the current one finishes
+        mediaPlayer?.setOnCompletionListener {
+            Log.d("MusicPlayerRepository", "Song finished, calling nextSong()")
+            nextSong() // Move to the next song when the current one finishes
+        }
+    }
 
 
     override fun deleteSong(songPath: String): Boolean {
@@ -279,8 +287,9 @@ class MusicPlayerRepositoryImp(private val context: Context) : MusicPlayerInterf
     override fun nextSong() {
         if (songList.isNotEmpty()) {
             currentIndex = (currentIndex + 1) % songList.size // Move to the next song
-            playSong(songList[currentIndex])
-            Log.d("MusicPlayerRepository", "Playing next song: ${songList[currentIndex].name}")
+            val nextSong = songList[currentIndex]
+            playSong(nextSong)
+            Log.d("MusicPlayerRepository", "Playing next song: ${nextSong.name}")
         } else {
             Log.e("MusicPlayerRepository", "No songs available for next.")
         }

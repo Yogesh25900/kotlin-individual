@@ -3,7 +3,11 @@
     <style name="Base.Theme.Musicplayer" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:fontFamily">@font/regular</item>
+
     </style>
 
-    <style name="Theme.Musicplayer" parent="Base.Theme.Musicplayer" />
+    <style name="Theme.Musicplayer" parent="Base.Theme.Musicplayer">
+    <item name="android:fontFamily">@font/regular</item>
+    </style>
 </resources>

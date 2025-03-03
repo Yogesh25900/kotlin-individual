@@ -1,6 +1,7 @@
 package com.example.music_player.ui.fragment
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
@@ -322,19 +323,34 @@ class homeFragment : Fragment() {
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
             ): Boolean = false
-
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
                 val songPath = songAdapter.songs[position].path
+
                 if (!PermissionUtils.hasPermissions(requireContext())) {
                     PermissionUtils.requestManageExternalStoragePermission(requireContext())
                     Toast.makeText(requireContext(), "Please allow storage access to delete songs", Toast.LENGTH_LONG).show()
                     return
                 }
 
-
-                songAdapter.deleteSong(position)
+                // Show confirmation dialog before deleting
+                val context = requireContext()
+                AlertDialog.Builder(context)
+                    .setTitle("Delete Song")
+                    .setMessage("Are you sure you want to delete this song?")
+                    .setPositiveButton("Yes") { _, _ ->
+                        // Proceed with deletion
+                        songAdapter.deleteSong(position)  // Delete song and refresh RecyclerView
+                    }
+                    .setNegativeButton("No") { _, _ ->
+                        // If user clicks "No", notify RecyclerView and reset the swipe position
+                        songAdapter.notifyItemChanged(position)
+                        // Optionally, you can reset the translation to ensure the item isn't swiped off the screen
+                        viewHolder.itemView.translationX = 0f
+                    }
+                    .show()
             }
+
 
             override fun onChildDraw(
                 c: Canvas,
@@ -346,13 +362,31 @@ class homeFragment : Fragment() {
                 isCurrentlyActive: Boolean
             ) {
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+
+                val itemView = viewHolder.itemView
+
+                // Only apply background if the item is swiped to the left (negative dX)
                 if (dX < 0) {
-                    val itemView = viewHolder.itemView
                     val background = ColorDrawable(Color.RED)
                     background.setBounds(itemView.left + dX.toInt(), itemView.top, itemView.right, itemView.bottom)
                     background.draw(c)
                 }
+
+                // Optionally, you can draw a delete icon or text on top of the red background:
+                if (dX < 0) {
+                    val deleteIcon = ContextCompat.getDrawable(recyclerView.context, R.drawable.baseline_delete_outline_24) // your delete icon
+                    deleteIcon?.let {
+                        val iconMargin = (itemView.height - it.intrinsicHeight) / 2
+                        val iconLeft = itemView.right - iconMargin - it.intrinsicWidth
+                        val iconRight = itemView.right - iconMargin
+                        val iconTop = itemView.top + (itemView.height - it.intrinsicHeight) / 2
+                        val iconBottom = iconTop + it.intrinsicHeight
+                        it.setBounds(iconLeft, iconTop, iconRight, iconBottom)
+                        it.draw(c)
+                    }
+                }
             }
+
         }
 
         ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(binding.songRecyclerView)

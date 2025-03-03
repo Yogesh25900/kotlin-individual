@@ -1,5 +1,6 @@
 package com.example.music_player.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,18 +31,20 @@ class PlaylistAdapter(
         }
     }
 
-    class PlaylistViewHolder(itemView: View, private val onOpenPlaylistClick: (String) -> Unit) : RecyclerView.ViewHolder(itemView) {
+    class PlaylistViewHolder(
+        itemView: View,
+        private val onOpenPlaylistClick: (String) -> Unit
+    ) : RecyclerView.ViewHolder(itemView) {
         private val nameTextView: TextView = itemView.findViewById(R.id.tvPlaylistName)
-        private val btn: Button = itemView.findViewById(R.id.openPlaylistButton)
+        private val openButton: Button = itemView.findViewById(R.id.openPlaylistButton)
 
         fun bind(playlist: Playlist) {
             nameTextView.text = playlist.name
 
-            // Set the click listener for the button
-            btn.setOnClickListener {
+            // Set the click listener for the open button
+            openButton.setOnClickListener {
                 playlist.id?.let { id ->
-                    // Invoke the callback with the playlist id when the button is clicked
-                    onOpenPlaylistClick(id)
+                    onOpenPlaylistClick(id)  // Open the playlist when the button is clicked
                 }
             }
         }
@@ -55,5 +58,25 @@ class PlaylistAdapter(
         override fun areContentsTheSame(oldItem: Playlist, newItem: Playlist): Boolean {
             return oldItem == newItem
         }
+    }
+
+    // Method to show a delete confirmation dialog when swiped
+    fun showDeleteConfirmationDialog(context: Context, playlistId: String, position: Int, onConfirm: () -> Unit,    onCancel: () -> Unit
+    ) {
+        android.app.AlertDialog.Builder(context)
+            .setTitle("Delete Playlist")
+            .setMessage("Are you sure you want to delete this playlist?")
+            .setPositiveButton("Yes") { _, _ ->
+                onConfirm()  // Call the confirm deletion callback
+            }
+            .setNegativeButton("No") { dialog, _ ->
+                // Notify adapter that the swipe was canceled
+                onCancel()
+
+                notifyItemChanged(position)
+
+                dialog.dismiss()
+            }
+            .show()
     }
 }
